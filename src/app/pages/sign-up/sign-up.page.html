@@ -1,0 +1,50 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Sign Up</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div id="container">
+    <img class="logo" src="/assets/poo.png"/><p></p>
+    <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()" autocomplete="off">
+      <p>
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input autocomplete="false" matInput placeholder="Your email address" formControlName="email"/>
+          <button mat-icon-button matSuffix>
+            <mat-icon matSuffix>alternate_email</mat-icon>
+          </button>
+        </mat-form-field>
+      </p>
+      <p>
+        <mat-form-field appearance="outline">
+          <mat-label>Password</mat-label>
+          <input autocomplete="false" matInput [type]="hide ? 'password' : 'text'" formControlName="password">
+          <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+            <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+      </p>
+      <p>
+        <mat-form-field appearance="outline">
+          <mat-label>Repeat password</mat-label>
+          <input autocomplete="false" matInput [type]="hideR ? 'password' : 'text'" formControlName="repeatPassword">
+          <button mat-icon-button matSuffix (click)="hideR = !hideR" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hideR">
+            <mat-icon>{{hideR ? 'visibility_off' : 'visibility'}}</mat-icon>
+          </button>
+        </mat-form-field>
+      </p>
+      <p>
+        <button mat-raised-button color="primary" type="submit" [disabled]="!signUpForm.valid">
+          Sign Up
+        </button>
+      </p>
+      <p>
+        <a mat-flat-button [routerLink]="['/log-in']">Log In</a>
+      </p>
+    </form>
+
+
+  </div>
+</ion-content>
