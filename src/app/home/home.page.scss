@@ -6,6 +6,11 @@
   right: 0;
   top: 50%;
   transform: translateY(-50%);
+  padding: 20px;
+  .mat-form-field{ width: 100%; }
+  .logo{
+    height: 100px;
+  }
 }
 
 #container strong {
