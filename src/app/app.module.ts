@@ -11,7 +11,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import {Api, Util} from './providers/providers';
 import {HttpClient, HttpClientModule} from '@angular/common/http';
-
+import {Geolocation} from '@ionic-native/geolocation/ngx'
 @NgModule({
   declarations: [AppComponent],
   entryComponents: [],
@@ -26,10 +26,12 @@ import {HttpClient, HttpClientModule} from '@angular/common/http';
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-      Api,
-      Util,
-      HttpClientModule,
-      HttpClient
+    Api,
+    Util,
+    HttpClientModule,
+    HttpClient,
+    Geolocation
+
   ],
   bootstrap: [AppComponent]
 })

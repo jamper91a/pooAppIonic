@@ -28,7 +28,7 @@ export class MyTanksPage implements OnInit, AfterViewInit {
     try {
 
       this.response  = await this.clientService.getTanks();
-      // this.initMap();
+      this.initMap();
     } catch (e) {
       await this.util.showToast('Error getting the tanks');
       await this.router.navigateByUrl('home');
@@ -36,8 +36,7 @@ export class MyTanksPage implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.platform.ready().then(() => {
-    });
+
   }
 
   initMap() {

@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import {LoginResponse} from '../../api/responses/LoginResponse';
-import {TanksByClientResponse} from '../../api/responses/TanksByClientResponse';
 import {ClientService} from '../../api/service/client.service';
 import {Router} from '@angular/router';
 import {Util} from '../../providers/util';
@@ -23,5 +21,9 @@ export class HomePage implements OnInit {
 
   async getMyTanks() {
     await this.router.navigateByUrl('my-tanks');
+  }
+
+  async goToDownload() {
+    await this.router.navigateByUrl('download');
   }
 }
