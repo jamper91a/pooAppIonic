@@ -1,30 +1,40 @@
 <ion-header>
   <ion-toolbar>
     <ion-title>My tanks</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
 
-  <div class="content" *ngIf="response.tanks">
-    <p *ngFor="let tank of response.tanks">
-      <mat-card class="example-card">
-        <mat-card-header>
-          <div mat-card-avatar class="tank-{{tank.tankType.id}}"></div>
-          <mat-card-title>{{tank.name}}</mat-card-title>
-          <mat-card-subtitle>Last download: {{tank.lastTime}} days ago</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div id="map{{tank.id}}" style="height:150px;"></div>
-        </mat-card-content>
-        <mat-card-actions>
-          <button mat-button color="primary">Vew History</button>
-          <button mat-button color="primary">Download</button>
-        </mat-card-actions>
-      </mat-card>
+  <div class="content">
+    <p>
+      <button mat-raised-button color="primary" class="full" (click)="addTank()">Add Tank</button>
     </p>
+    <div *ngIf="response.tanks">
+      <p *ngFor="let tank of response.tanks">
+        <mat-card class="example-card">
+          <mat-card-header>
+            <div mat-card-avatar class="tank-{{tank.tankType.id}}"></div>
+            <mat-card-title>{{tank.name}}</mat-card-title>
+            <mat-card-subtitle *ngIf="tank.lastTime">Last download: {{tank.lastTime}} days ago</mat-card-subtitle>
+            <mat-card-subtitle *ngIf="!tank.lastTime">Last download: Never</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content *ngIf="tank.history">
+            <div id="map{{tank.id}}" style="height:150px;"></div>
+          </mat-card-content>
+          <mat-card-actions>
+            <button mat-button color="primary">Vew History</button>
+            <button mat-button color="primary">Download</button>
+          </mat-card-actions>
+        </mat-card>
+      </p>
 
 
+    </div>
   </div>
+
 
 </ion-content>

@@ -22,14 +22,6 @@ export class HomePage implements OnInit {
   }
 
   async getMyTanks() {
-    try {
-      const response: TanksByClientResponse  = await this.clientService.getTanks();
-      await this.router.navigateByUrl('my-tanks');
-      // } else{
-      //   await this.util.showToast('User no valid');
-      // }
-    } catch (e) {
-      console.error(e);
-    }
+    await this.router.navigateByUrl('my-tanks');
   }
 }

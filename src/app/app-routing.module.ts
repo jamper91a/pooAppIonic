@@ -23,6 +23,10 @@ const routes: Routes = [
     path: 'my-tanks',
     loadChildren: () => import('./pages/my-tanks/my-tanks.module').then( m => m.MyTanksPageModule)
   },
+  {
+    path: 'add-tank',
+    loadChildren: () => import('./pages/add-tank/add-tank.module').then( m => m.AddTankPageModule)
+  },
 ];
 
 @NgModule({
