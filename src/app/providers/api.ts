@@ -54,7 +54,7 @@ export class Api {
                 'Content-Type':  'application/json'
             })
         };
-        const token = Util.getPreference(this.util.constants.token);
+        const token = Util.getPreference('token');
         if (token) {
             httpOptions.headers =
                 httpOptions.headers.set('Authorization', 'Bearer ' + token);
@@ -83,7 +83,7 @@ export class Api {
                 'Content-Type':  'application/json'
             })
         };
-        const token = Util.getPreference(this.util.constants.token);
+        const token = Util.getPreference('token');
         if (token) {
             httpOptions.headers =
                 httpOptions.headers.set('Authorization', 'Bearer ' + token);
