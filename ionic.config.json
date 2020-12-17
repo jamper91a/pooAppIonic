@@ -1,5 +1,7 @@
 {
   "name": "pooAppIonic",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

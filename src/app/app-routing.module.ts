@@ -27,6 +27,10 @@ const routes: Routes = [
     path: 'add-tank',
     loadChildren: () => import('./pages/add-tank/add-tank.module').then( m => m.AddTankPageModule)
   },
+  {
+    path: 'download',
+    loadChildren: () => import('./pages/download/download.module').then( m => m.DownloadPageModule)
+  },
 ];
 
 @NgModule({
