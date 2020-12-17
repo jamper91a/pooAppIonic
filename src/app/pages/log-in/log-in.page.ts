@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
 import {LoginRequest} from '../../api/requests/LoginRequest';
 import {LoginResponse} from '../../api/responses/LoginResponse';
@@ -11,7 +11,7 @@ import {Util} from '../../providers/providers';
   templateUrl: 'log-in.page.html',
   styleUrls: ['log-in.page.scss'],
 })
-export class LogInPage {
+export class LogInPage implements OnInit {
   hide = true;
   loginForm = new FormGroup({
     email: new FormControl('jamper91@hotmail.com', [Validators.required, Validators.email]),
@@ -30,15 +30,20 @@ export class LogInPage {
     try {
       let redirectUrl = '';
       const response: LoginResponse  = await this.userService.login(this.request);
-      console.log(response);
       if (response.user.group.id === 2) {
-          redirectUrl = 'home';
-          // await this.router.navigateByUrl(redirectUrl);
+          await this.router.navigateByUrl('home');
       } else{
         await this.util.showToast('User no valid');
       }
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  async ngOnInit() {
+    const token = Util.getPreference('token');
+    if (token) {
+      await this.router.navigateByUrl('home');
     }
   }
 }

@@ -24,10 +24,7 @@ export class HomePage implements OnInit {
   async getMyTanks() {
     try {
       const response: TanksByClientResponse  = await this.clientService.getTanks();
-      console.log(response);
-      // if (response.user.group.id === 2) {
-      //   redirectUrl = 'home';
-      //   // await this.router.navigateByUrl(redirectUrl);
+      await this.router.navigateByUrl('my-tanks');
       // } else{
       //   await this.util.showToast('User no valid');
       // }

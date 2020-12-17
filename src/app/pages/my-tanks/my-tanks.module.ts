@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { MyTanksPageRoutingModule } from './my-tanks-routing.module';
 
 import { MyTanksPage } from './my-tanks.page';
+import {MaterialModule} from '../../material.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    MyTanksPageRoutingModule
+    MyTanksPageRoutingModule,
+    MaterialModule,
   ],
   declarations: [MyTanksPage]
 })

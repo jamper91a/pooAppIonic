@@ -1,9 +1,26 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>my-tanks</ion-title>
+    <ion-title>My tanks</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
+  <div class="content" *ngIf="response.tanks">
+    <p *ngFor="let tank of response.tanks">
+      <mat-card class="example-card">
+        <mat-card-header>
+          <div mat-card-avatar class="tank-{{tank.tankType.id}}"></div>
+          <mat-card-title>{{tank.name}}</mat-card-title>
+          <mat-card-subtitle>Last download: {{tank.lastTime}} days ago</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-actions>
+          <button mat-button color="primary">Vew History</button>
+          <button mat-button color="primary">Download</button>
+        </mat-card-actions>
+      </mat-card>
+    </p>
+
+
+  </div>
 
 </ion-content>

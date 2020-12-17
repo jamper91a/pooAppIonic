@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import {TanksByClientResponse} from '../../api/responses/TanksByClientResponse';
+import {ClientService} from '../../api/service/client.service';
+import {Router} from '@angular/router';
+import {Util} from '../../providers/util';
 
 @Component({
   selector: 'app-my-tanks',
@@ -7,9 +11,25 @@ import { Component, OnInit } from '@angular/core';
 })
 export class MyTanksPage implements OnInit {
 
-  constructor() { }
+  response: TanksByClientResponse = new TanksByClientResponse();
+  constructor(
+      private clientService: ClientService,
+      private router: Router,
+      private util: Util
+  ) { }
 
-  ngOnInit() {
+  async ngOnInit() {
+    await this.getMyTanks();
+  }
+
+  async getMyTanks() {
+    try {
+      this.response  = await this.clientService.getTanks();
+      console.log(this.response);
+    } catch (e) {
+      this.util.showToast('Error getting the tanks');
+      this.router.navigateByUrl('home');
+    }
   }
 
 }
