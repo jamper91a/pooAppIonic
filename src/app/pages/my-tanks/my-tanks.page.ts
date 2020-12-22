@@ -1,7 +1,7 @@
 import {AfterViewInit, Component, OnInit} from '@angular/core';
 import {TanksByClientResponse} from '../../api/responses/TanksByClientResponse';
 import {ClientService} from '../../api/service/client.service';
-import {Router} from '@angular/router';
+import {NavigationExtras, Router} from '@angular/router';
 import {Util} from '../../providers/util';
 import { Map, tileLayer, marker, icon } from 'leaflet';
 import {Platform} from '@ionic/angular';
@@ -70,5 +70,14 @@ export class MyTanksPage implements OnInit, AfterViewInit {
 
   async addTank() {
     await this.router.navigateByUrl('add-tank');
+  }
+  async goToDownload(tankId: number){
+    const navigationExtras: NavigationExtras = {
+      state: {
+        tankId
+      }
+    };
+
+    await this.router.navigateByUrl('download', navigationExtras);
   }
 }

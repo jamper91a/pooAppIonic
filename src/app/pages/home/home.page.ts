@@ -26,4 +26,8 @@ export class HomePage implements OnInit {
   async goToDownload() {
     await this.router.navigateByUrl('download');
   }
+
+  async addTank() {
+    await this.router.navigateByUrl('add-tank');
+  }
 }
