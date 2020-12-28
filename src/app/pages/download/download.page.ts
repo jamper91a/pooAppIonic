@@ -14,6 +14,7 @@ import {HistoryCreateRequest} from '../../api/requests/HistoryCreateRequest';
 // import * as nzgeoJSON from '../../../assets/maps/nz.json';
 import * as  GeoJsonGeometriesLookup  from 'geojson-geometries-lookup';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {filter} from 'rxjs/operators';
 @Component({
   selector: 'app-download',
   templateUrl: './download.page.html',
@@ -31,10 +32,14 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   // User position
   public position: {x: number, y: number} = {x: 0, y: 0};
   public validPosition = true;
+  public marketCurrentPosition = null;
+  public circleDanger = null;
+  public circleWarning = null;
   /**
    * Id of the watcher. it will be use to close the watcher once the user leave the page
    */
   public watchId;
+  public intervalPosition = null;
   constructor(
       private geolocation: Geolocation,
       private router: Router,
@@ -66,41 +71,41 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
 
     this.platform.ready().then(() => {
 
-      self.geolocation.getCurrentPosition().then((resp) => {
-        self.loading = false;
-        self.initMap();
-        self.positionReceived(resp.coords.latitude, resp.coords.longitude);
-        // self.addElements(-37.0808242, 177.2008161);
-      }).catch((error) => {
-        console.log('Error getting location', error);
-      });
+      self.intervalPosition = setInterval(() => {
+        self.geolocation.getCurrentPosition().then((resp) => {
+            self.loading = false;
+            self.initMap();
+            self.positionReceived(resp.coords.latitude, resp.coords.longitude);
+          }).catch((error) => {
+            console.log('Error getting location', error);
+          });
+      }, 5000);
 
-      this.watchId = self.geolocation.watchPosition( {timeout: 10000, enableHighAccuracy: true});
-      this.watchId.subscribe((resp) => {
-        console.log('new coordinates');
-        self.positionReceived(resp.coords.latitude, resp.coords.longitude);
-      });
     });
   }
   positionReceived(x, y){
+    console.log('new position');
     this.position.x = x;
     this.position.y = y;
     this.addElements(this.position.x, this.position.y);
   }
   initMap() {
-    this.map = new Map('map', {
-      center: [-41.2084402, 172.4722949],
-      zoom: 5
-    });
-    tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(this.map);
+    if (!this.map){
+      this.map = new Map('map', {
+        center: [-41.2084402, 172.4722949],
+        zoom: 5
+      });
+      tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(this.map);
 
-    this.map.on('click', e => {
-      this.position.x = e.latlng.lat;
-      this.position.y = e.latlng.lng;
-      this.addElements(e.latlng.lat, e.latlng.lng);
-    });
+      this.map.on('click', e => {
+        this.position.x = e.latlng.lat;
+        this.position.y = e.latlng.lng;
+        this.addElements(e.latlng.lat, e.latlng.lng);
+      });
+    }
+
 
   }
   addElements(x, y){
@@ -123,11 +128,20 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
       fillOpacity: 0.5,
       radius: 1500
     };
-    marker([x, y], {icon: customMarkerIcon}).addTo(this.map);
+    if (this.marketCurrentPosition) {
+      this.map.removeLayer(this.marketCurrentPosition);
+    }
+    this.marketCurrentPosition = marker([x, y], {icon: customMarkerIcon}).addTo(this.map);
     this.map.flyTo([x, y], 13);
     this.map.on('zoomend', () => {
-      circle([x, y], areaWarning).addTo(this.map);
-      circle([x, y], areaError).addTo(this.map);
+      if (this.circleWarning) {
+        this.map.removeLayer(this.circleWarning);
+      }
+      if (this.circleDanger) {
+        this.map.removeLayer(this.circleDanger);
+      }
+      this.circleWarning = circle([x, y], areaWarning).addTo(this.map);
+      this.circleDanger = circle([x, y], areaError).addTo(this.map);
       this.getMapJson();
       this.firstTime = false;
 
@@ -174,9 +188,9 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
       const point1 = {type: 'Point', coordinates: point};
       const touchs = this.glookup.countContainers(point1);
       if (touchs > 0){
-        this.snackBar.open('You are too close to the coast', 'Ok', {
-          duration: 3000
-        });
+        // this.snackBar.open('You are too close to the coast', 'Ok', {
+        //   duration: 3000
+        // });
         return false;
       }
     }
@@ -220,6 +234,8 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.watchId.unsubscribe();
+    console.log('ngDestroy');
+    clearInterval(this.intervalPosition);
+    // this.geolocation.clearWatch(this.watchId);
   }
 }

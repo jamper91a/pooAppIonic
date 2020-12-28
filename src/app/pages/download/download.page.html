@@ -16,7 +16,6 @@
           <mat-select formControlName="tank"  formControlName="tank" [(value)]="tankId">
             <mat-option [value]="tank.id" *ngFor="let tank of response.tanks" >{{tank.name}}</mat-option>
           </mat-select>
-          <mat-icon mat-icon-button matSuffix>Tanks to download</mat-icon>
         </mat-form-field>
       </div>
 
