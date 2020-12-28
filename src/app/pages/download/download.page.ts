@@ -1,6 +1,6 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
-import { Geolocation } from '@ionic-native/geolocation/ngx';
-import { Map, tileLayer, marker, icon, circle, geoJSON, polygon } from 'leaflet';
+import {Geolocation} from '@ionic-native/geolocation/ngx';
+import {circle, geoJSON, icon, Map, marker, tileLayer} from 'leaflet';
 import * as turf from '@turf/turf';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Util} from '../../providers/util';
@@ -12,9 +12,9 @@ import {TankService} from '../../api/service/tank.service';
 import {HistoryCreateRequest} from '../../api/requests/HistoryCreateRequest';
 // @ts-ignore
 // import * as nzgeoJSON from '../../../assets/maps/nz.json';
-import * as  GeoJsonGeometriesLookup  from 'geojson-geometries-lookup';
+import * as  GeoJsonGeometriesLookup from 'geojson-geometries-lookup';
 import {MatSnackBar} from '@angular/material/snack-bar';
-import {filter} from 'rxjs/operators';
+
 @Component({
   selector: 'app-download',
   templateUrl: './download.page.html',
@@ -69,20 +69,37 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const self = this;
 
-    this.platform.ready().then(() => {
+    this.platform.ready().then(async () => {
 
-      self.intervalPosition = setInterval(() => {
-        self.geolocation.getCurrentPosition().then((resp) => {
-            self.loading = false;
-            self.initMap();
-            self.positionReceived(resp.coords.latitude, resp.coords.longitude);
-          }).catch((error) => {
-            console.log('Error getting location', error);
-          });
-      }, 5000);
+      await this.platformIsReady();
+      // self.intervalPosition = setInterval(() => {
+      //
+      // }, 5000);
 
     });
   }
+  async platformIsReady(){
+    const self = this;
+    const resp = await self.getPosition();
+    self.loading = false;
+    self.initMap();
+    self.positionReceived(resp.coords.latitude, resp.coords.longitude);
+    setTimeout(async () => {
+      await this.platformIsReady();
+    }, 5000);
+  }
+  getPosition(): Promise<any>{
+    const self =  this;
+    return self.geolocation.getCurrentPosition().then((resp) => {
+      // self.loading = false;
+      // self.initMap();
+      // self.positionReceived(resp.coords.latitude, resp.coords.longitude);
+      return resp;
+    }).catch((error) => {
+      console.log('Error getting location', error);
+    });
+  }
+
   positionReceived(x, y){
     console.log('new position');
     this.position.x = x;
@@ -188,9 +205,9 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
       const point1 = {type: 'Point', coordinates: point};
       const touchs = this.glookup.countContainers(point1);
       if (touchs > 0){
-        // this.snackBar.open('You are too close to the coast', 'Ok', {
-        //   duration: 3000
-        // });
+        this.snackBar.open('You are too close to the coast', 'Ok', {
+          duration: 3000
+        });
         return false;
       }
     }
@@ -224,7 +241,6 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   }
   async getMyTanks() {
     try {
-
       this.response  = await this.clientService.getTanks();
       // this.initMap();
     } catch (e) {
