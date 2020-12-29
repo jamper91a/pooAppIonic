@@ -1,7 +1,6 @@
 import {AfterViewInit, Component, OnDestroy, OnInit} from '@angular/core';
 import {Geolocation} from '@ionic-native/geolocation/ngx';
 import {circle, geoJSON, icon, Map, marker, tileLayer} from 'leaflet';
-import * as turf from '@turf/turf';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Util} from '../../providers/util';
 import {Platform} from '@ionic/angular';
@@ -11,9 +10,8 @@ import {ClientService} from '../../api/service/client.service';
 import {TankService} from '../../api/service/tank.service';
 import {HistoryCreateRequest} from '../../api/requests/HistoryCreateRequest';
 // @ts-ignore
-// import * as nzgeoJSON from '../../../assets/maps/nz.json';
-import * as  GeoJsonGeometriesLookup from 'geojson-geometries-lookup';
 import {MatSnackBar} from '@angular/material/snack-bar';
+import {MapService} from '../../api/service/map.service';
 
 @Component({
   selector: 'app-download',
@@ -35,11 +33,8 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   public marketCurrentPosition = null;
   public circleDanger = null;
   public circleWarning = null;
-  /**
-   * Id of the watcher. it will be use to close the watcher once the user leave the page
-   */
-  public watchId;
-  public intervalPosition = null;
+
+  public tracking = true;
   constructor(
       private geolocation: Geolocation,
       private router: Router,
@@ -48,7 +43,8 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
       private clientService: ClientService,
       private tankService: TankService,
       private route: ActivatedRoute,
-      private snackBar: MatSnackBar
+      private snackBar: MatSnackBar,
+      private mapService: MapService
   ) { }
 
   async ngOnInit() {
@@ -70,12 +66,7 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
     const self = this;
 
     this.platform.ready().then(async () => {
-
       await this.platformIsReady();
-      // self.intervalPosition = setInterval(() => {
-      //
-      // }, 5000);
-
     });
   }
   async platformIsReady(){
@@ -83,28 +74,27 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
     const resp = await self.getPosition();
     self.loading = false;
     self.initMap();
-    self.positionReceived(resp.coords.latitude, resp.coords.longitude);
+    await self.positionReceived(resp.coords.latitude, resp.coords.longitude);
     setTimeout(async () => {
-      await this.platformIsReady();
+      if (self.tracking) {
+        await this.platformIsReady();
+      }
     }, 5000);
   }
   getPosition(): Promise<any>{
     const self =  this;
     return self.geolocation.getCurrentPosition().then((resp) => {
-      // self.loading = false;
-      // self.initMap();
-      // self.positionReceived(resp.coords.latitude, resp.coords.longitude);
       return resp;
     }).catch((error) => {
       console.log('Error getting location', error);
     });
   }
 
-  positionReceived(x, y){
+  async positionReceived(x, y){
     console.log('new position');
     this.position.x = x;
     this.position.y = y;
-    this.addElements(this.position.x, this.position.y);
+    await this.addElements(this.position.x, this.position.y);
   }
   initMap() {
     if (!this.map){
@@ -116,16 +106,16 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(this.map);
 
-      this.map.on('click', e => {
+      this.map.on('click', async (e) => {
         this.position.x = e.latlng.lat;
         this.position.y = e.latlng.lng;
-        this.addElements(e.latlng.lat, e.latlng.lng);
+        await this.addElements(e.latlng.lat, e.latlng.lng);
       });
     }
 
 
   }
-  addElements(x, y){
+  async addElements(x, y){
     this.downloadForm.controls.lat.setValue(x);
     this.downloadForm.controls.lon.setValue(y);
     const customMarkerIcon = icon({
@@ -149,8 +139,9 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
       this.map.removeLayer(this.marketCurrentPosition);
     }
     this.marketCurrentPosition = marker([x, y], {icon: customMarkerIcon}).addTo(this.map);
+    this.validPosition = await this.validatePosition();
     this.map.flyTo([x, y], 13);
-    this.map.on('zoomend', () => {
+    this.map.on('zoomend', async () => {
       if (this.circleWarning) {
         this.map.removeLayer(this.circleWarning);
       }
@@ -159,60 +150,33 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
       }
       this.circleWarning = circle([x, y], areaWarning).addTo(this.map);
       this.circleDanger = circle([x, y], areaError).addTo(this.map);
-      this.getMapJson();
-      this.firstTime = false;
-
+      await this.getMapJson();
     });
   }
 
-  /**
-   * Function that turn a point into a polygon.
-   * This polygon will be a 'circle' around the central point
-   */
-  circleToPolygon(x, y){
-    const radius = 0.5;
-    // I have to change the position of x and y because that is how turf works
-    const circlePosition = turf.circle([y, x], radius, {steps: 10});
-    return circlePosition;
-  }
+
 
   /**
    * Load the json file with the coast line of new zealand
    */
-  getMapJson(){
-    if (this.glookup) {
-      this.validPosition = this.validatePosition();
-    } else {
-      fetch('./assets/maps/nz_coast_line.geojson').then(res => res.json())
-          .then(json => {
-            // Add the coast line to the map
-            geoJSON(json).addTo(this.map);
-            this.glookup = new GeoJsonGeometriesLookup(json);
-            this.validPosition = this.validatePosition();
-          });
+  async getMapJson(){
+    if (this.firstTime) {
+      const json = await this.mapService.getCoastLineNzMapJson();
+      geoJSON(json).addTo(this.map);
+      this.firstTime = false;
     }
-
-
   }
 
-  /**
-   * This function will validate that the position of the user is not close to the beach
-   */
-  validatePosition(){
-    const circlePosition = this.circleToPolygon(this.position.x, this.position.y);
-    // I check every point of the 'circle' to check if is inside any of the polygons of the coast line
-    for (const point of circlePosition.geometry.coordinates[0]){
-      const point1 = {type: 'Point', coordinates: point};
-      const touchs = this.glookup.countContainers(point1);
-      if (touchs > 0){
+  async validatePosition(){
+    const result = await this.mapService.validatePosition(this.position.x, this.position.y);
+    if (!result){
+      if (this.tracking) {
         this.snackBar.open('You are too close to the coast', 'Ok', {
           duration: 3000
         });
-        return false;
       }
     }
-
-    return true;
+    return result;
   }
 
   async onDownload() {
@@ -251,7 +215,7 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     console.log('ngDestroy');
-    clearInterval(this.intervalPosition);
+    this.tracking = false;
     // this.geolocation.clearWatch(this.watchId);
   }
 }
