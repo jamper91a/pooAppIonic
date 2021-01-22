@@ -1,5 +1,5 @@
-import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import {NgModule} from '@angular/core';
+import {PreloadAllModules, RouterModule, Routes} from '@angular/router';
 
 const routes: Routes = [
   {
@@ -30,6 +30,10 @@ const routes: Routes = [
   {
     path: 'download',
     loadChildren: () => import('./pages/download/download.module').then( m => m.DownloadPageModule)
+  },
+  {
+    path: 'history',
+    loadChildren: () => import('./pages/history/history.module').then( m => m.HistoryPageModule)
   },
 ];
 

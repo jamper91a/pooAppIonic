@@ -31,9 +31,23 @@
     </p>
 
     <p>
-      <button mat-raised-button color="primary" (click)="follow()">
+      <button mat-raised-button color="primary" (click)="follow()" *ngIf="!backGroundLocationRunning">
         Follow
         <mat-icon>done</mat-icon>
+      </button>
+    </p>
+
+    <p>
+      <button mat-raised-button color="primary" (click)="stopFollow()" *ngIf="backGroundLocationRunning">
+        Stop Follow
+        <mat-icon>done</mat-icon>
+      </button>
+    </p>
+
+    <p>
+      <button mat-raised-button color="primary" (click)="logOut()">
+        Exit
+        <mat-icon>exit_to_app</mat-icon>
       </button>
     </p>
 

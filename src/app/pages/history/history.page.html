@@ -1,0 +1,34 @@
+<ion-header *ngIf="tank">
+  <ion-toolbar>
+    <ion-title>History {{tank.name}}</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="home"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <div class="content">
+    <p>
+    </p>
+    <div *ngIf="response.history">
+      <p *ngFor="let history of response.history">
+        <mat-card class="example-card">
+          <mat-card-header>
+            <div mat-card-avatar class="tank-{{tank.tankType.id}}"></div>
+            <mat-card-title>{{tank.name}}</mat-card-title>
+            <mat-card-subtitle *ngIf="history.createdAt">Last download: {{history.createdAt}}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div id="map-history-{{history.id}}" style="height:150px;"></div>
+          </mat-card-content>
+        </mat-card>
+      </p>
+
+
+    </div>
+  </div>
+
+
+</ion-content>

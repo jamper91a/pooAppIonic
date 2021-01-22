@@ -3,13 +3,14 @@ import {ClientService} from '../../api/service/client.service';
 import {Router} from '@angular/router';
 import {Util} from '../../providers/util';
 import {
-  BackgroundGeolocation,
-  BackgroundGeolocationConfig,
-  BackgroundGeolocationEvents,
-  BackgroundGeolocationResponse
+    BackgroundGeolocation,
+    BackgroundGeolocationConfig,
+    BackgroundGeolocationEvents,
+    BackgroundGeolocationResponse
 } from '@ionic-native/background-geolocation/ngx';
 import {Platform} from '@ionic/angular';
 import {MapService} from '../../api/service/map.service';
+import {LocalNotifications} from '@ionic-native/local-notifications/ngx';
 
 @Component({
   selector: 'app-home',
@@ -22,7 +23,7 @@ export class HomePage implements OnInit {
     desiredAccuracy: 10,
     stationaryRadius: 20,
     distanceFilter: 30,
-    debug: true, //  enable this hear sounds for background-geolocation life-cycle.
+    debug: false, //  enable this hear sounds for background-geolocation life-cycle.
     stopOnTerminate: false, // enable this to clear background location settings when the app terminates,
     notificationTitle: 'Background tracking',
     notificationText: 'enabled',
@@ -30,17 +31,21 @@ export class HomePage implements OnInit {
     fastestInterval: 5000,
     activitiesInterval: 10000,
   };
-
+  public notificationsEnabled;
+  public backGroundLocationRunning = false;
   constructor(
       private clientService: ClientService,
       private router: Router,
       private util: Util,
       private backgroundGeolocation: BackgroundGeolocation,
       public platform: Platform,
-      public mapService: MapService
-  ) { }
+      public mapService: MapService,
+      private localNotifications: LocalNotifications
+  ) {
+    this.notificationsEnabled = this.localNotifications.requestPermission();
+  }
 
-  ngOnInit() {
+  async ngOnInit() {
     // Load map data in case we need
     if (this.platform.is('cordova')) {
       this.backgroundGeolocation.configure(this.config)
@@ -48,9 +53,16 @@ export class HomePage implements OnInit {
             this.backgroundGeolocation.on(BackgroundGeolocationEvents.location)
                 .subscribe(async (location: BackgroundGeolocationResponse) => {
                   const result = await this.mapService.validatePosition(location.latitude, location.longitude);
+                  if (!result) {
+                    if (this.notificationsEnabled) {
+                      this.showNotification();
+                    }
+                  }
                   await this.backgroundGeolocation.finish(); // FOR IOS ONLY
             });
           });
+      const status = await this.backgroundGeolocation.checkStatus();
+      this.backGroundLocationRunning = status.isRunning;
     }
   }
 
@@ -68,13 +80,37 @@ export class HomePage implements OnInit {
 
   async follow(){
     // start recording location
+    this.backGroundLocationRunning = true;
     await this.backgroundGeolocation.start();
   }
 
   async stopFollow(){
     // start recording location
+    this.backGroundLocationRunning = false;
     await this.backgroundGeolocation.stop();
   }
 
+  showNotification(){
+    // Schedule a single notification
+    this.localNotifications.schedule({
+      id: 1,
+      title: 'Proximity notification',
+      text: 'Too close to the beach',
+      foreground: true,
+      actions: [{
+        id: 'download',
+        title: 'Download'
+      }]
+    });
+    this.localNotifications.on('download').subscribe(async (data) => {
+        alert('click on notification');
+        await this.goToDownload();
+    });
+  }
+
+  async logOut(){
+      localStorage.clear();
+      await this.router.navigateByUrl('log-in');
+  }
 
 }

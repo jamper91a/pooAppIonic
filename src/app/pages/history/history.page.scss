@@ -1,0 +1,18 @@
+.content{
+  margin-top: 20px;
+  padding: 20px;
+  mat-card-actions{
+    text-align: center;
+  }
+  .full{
+    width: 100%;
+  }
+}
+.tank-1 {
+  background-image: url('../../../assets/images/sail.png');
+  background-size: cover;
+}
+.tank-2 {
+  background-image: url('../../../assets/images/camper-van.png');
+  background-size: cover;
+}

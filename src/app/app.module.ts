@@ -13,6 +13,7 @@ import {Api, Util} from './providers/providers';
 import {HttpClient, HttpClientModule} from '@angular/common/http';
 import {Geolocation} from '@ionic-native/geolocation/ngx';
 import {BackgroundGeolocation} from '@ionic-native/background-geolocation/ngx';
+import {LocalNotifications} from '@ionic-native/local-notifications/ngx';
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,7 +34,8 @@ import {BackgroundGeolocation} from '@ionic-native/background-geolocation/ngx';
     HttpClientModule,
     HttpClient,
     Geolocation,
-    BackgroundGeolocation
+    BackgroundGeolocation,
+    LocalNotifications
 
   ],
   bootstrap: [AppComponent]

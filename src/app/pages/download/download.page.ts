@@ -52,7 +52,6 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
     this.route.queryParams.subscribe(params => {
       if (this.router.getCurrentNavigation().extras.state) {
         this.tankId = this.router.getCurrentNavigation().extras.state.tankId;
-        console.log('tankId', this.tankId);
       }
     });
     this.downloadForm = new FormGroup({});
@@ -63,31 +62,50 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
+    console.log('AFter view init');
     const self = this;
 
     this.platform.ready().then(async () => {
+      console.log('Platform ready');
       await this.platformIsReady();
     });
   }
   async platformIsReady(){
     const self = this;
     const resp = await self.getPosition();
-    self.loading = false;
-    self.initMap();
-    await self.positionReceived(resp.coords.latitude, resp.coords.longitude);
-    setTimeout(async () => {
-      if (self.tracking) {
-        await this.platformIsReady();
-      }
-    }, 5000);
+    if (resp != null) {
+      self.loading = false;
+      self.initMap();
+      console.log('map');
+      await self.positionReceived(resp.coords.latitude, resp.coords.longitude);
+      setTimeout(async () => {
+        if (self.tracking) {
+          await this.platformIsReady();
+        }
+      }, 5000);
+    } else {
+      const snackRef = this.snackBar.open('Sorry, we could not obtained your position', 'Try again', {
+        duration: 3000,
+
+      });
+      snackRef.onAction().subscribe(() => {
+        self.platformIsReady();
+      });
+    }
+
   }
   getPosition(): Promise<any>{
     const self =  this;
-    return self.geolocation.getCurrentPosition().then((resp) => {
-      return resp;
-    }).catch((error) => {
-      console.log('Error getting location', error);
-    });
+    try {
+      return self.geolocation.getCurrentPosition({timeout: 20000, enableHighAccuracy: true}).then((resp) => {
+        return resp;
+      }).catch((error) => {
+        console.log('Error getting location', error);
+        return null;
+      });
+    } catch (e) {
+      console.log('another error');
+    }
   }
 
   async positionReceived(x, y){
@@ -180,7 +198,7 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   }
 
   async onDownload() {
-    if (this.validPosition) {
+    if (!this.validPosition) {
       if (this.downloadForm.valid) {
         try {
           this.request.lat = this.downloadForm.value.lat;

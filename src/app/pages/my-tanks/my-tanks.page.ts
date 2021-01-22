@@ -3,8 +3,10 @@ import {TanksByClientResponse} from '../../api/responses/TanksByClientResponse';
 import {ClientService} from '../../api/service/client.service';
 import {NavigationExtras, Router} from '@angular/router';
 import {Util} from '../../providers/util';
-import { Map, tileLayer, marker, icon } from 'leaflet';
+import {icon, Map, marker, tileLayer} from 'leaflet';
 import {Platform} from '@ionic/angular';
+import {Tank} from '../../api/pojo/Tank';
+
 @Component({
   selector: 'app-my-tanks',
   templateUrl: './my-tanks.page.html',
@@ -80,4 +82,15 @@ export class MyTanksPage implements OnInit, AfterViewInit {
 
     await this.router.navigateByUrl('download', navigationExtras);
   }
+
+  async goToHistory(tank: Tank){
+    const navigationExtras: NavigationExtras = {
+      state: {
+        tank
+      }
+    };
+
+    await this.router.navigateByUrl('history', navigationExtras);
+  }
+
 }

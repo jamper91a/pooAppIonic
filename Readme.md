@@ -1,0 +1,2 @@
+# Enviromental vars
+nano ~/.zshenv
