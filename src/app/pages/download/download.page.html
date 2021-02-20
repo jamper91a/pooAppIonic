@@ -14,7 +14,7 @@
         <mat-form-field appearance="outline"  *ngIf="response.tanks">
           <mat-label>Tank*</mat-label>
           <mat-select formControlName="tank"  formControlName="tank" [(value)]="tankId">
-            <mat-option [value]="tank.id" *ngFor="let tank of response.tanks" >{{tank.name}}</mat-option>
+            <mat-option [value]="tank.id" *ngFor="let tank of response.tanks"  >{{tank.name}}</mat-option>
           </mat-select>
         </mat-form-field>
       </div>

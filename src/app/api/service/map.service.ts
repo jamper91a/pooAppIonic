@@ -8,7 +8,9 @@ import {Feature, Polygon} from '@turf/helpers';
 })
 export class MapService {
   private coastLineNzMapJson = null;
-  private glookup = null;
+  private marineFarmsNzMapJson = null;
+  private clGL = null;
+  private mfGL = null;
 
   constructor() {
   }
@@ -25,14 +27,34 @@ export class MapService {
     }
   }
 
+    async getMarineFarmsNzMapJson(){
+        if (!this.marineFarmsNzMapJson){
+            return fetch('./assets/maps/nz_marine_farms.geojson').then(res => res.json())
+                .then(json => {
+                    this.marineFarmsNzMapJson = json;
+                    return json;
+                });
+        }else{
+            return this.marineFarmsNzMapJson;
+        }
+    }
+
   private async loadGeoData(){
       if (this.coastLineNzMapJson) {
-          if (!this.glookup) {
-              this.glookup = new GeoJsonGeometriesLookup(this.coastLineNzMapJson);
+          if (!this.clGL) {
+              this.clGL = new GeoJsonGeometriesLookup(this.coastLineNzMapJson);
           }
       } else{
           await this.getCoastLineNzMapJson();
-          this.glookup = new GeoJsonGeometriesLookup(this.coastLineNzMapJson);
+          this.clGL = new GeoJsonGeometriesLookup(this.coastLineNzMapJson);
+      }
+      if (this.marineFarmsNzMapJson) {
+          if (!this.mfGL) {
+              this.mfGL = new GeoJsonGeometriesLookup(this.marineFarmsNzMapJson);
+          }
+      } else{
+          await this.getMarineFarmsNzMapJson();
+          this.mfGL = new GeoJsonGeometriesLookup(this.marineFarmsNzMapJson);
       }
   }
     /**
@@ -55,9 +77,16 @@ export class MapService {
         const circlePosition = this.pointToPolygon(x, y);
         // I check every point of the 'circle' to check if is inside any of the polygons of the coast line
         for (const point of circlePosition.geometry.coordinates[0]){
+            let touch;
             const point1 = {type: 'Point', coordinates: point};
-            const touch = this.glookup.countContainers(point1);
+            touch = this.clGL.countContainers(point1);
             if (touch > 0){
+                console.log('Touch Coast line');
+                return false;
+            }
+            touch = this.mfGL.countContainers(point1);
+            if (touch > 0){
+                console.log('Touch marine');
                 return false;
             }
         }

@@ -72,17 +72,27 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   }
   async platformIsReady(){
     const self = this;
-    const resp = await self.getPosition();
+    let resp = null;
+    if (this.platform.is('desktop')) {
+      resp = {
+        coords: {
+          latitude: -36.607397887180944,
+          longitude: 174.75025177001956
+        }
+      };
+    } else {
+      resp = await self.getPosition();
+    }
     if (resp != null) {
       self.loading = false;
       self.initMap();
       console.log('map');
       await self.positionReceived(resp.coords.latitude, resp.coords.longitude);
-      setTimeout(async () => {
-        if (self.tracking) {
-          await this.platformIsReady();
-        }
-      }, 5000);
+      // setTimeout(async () => {
+      //   if (self.tracking) {
+      //     await this.platformIsReady();
+      //   }
+      // }, 5000);
     } else {
       const snackRef = this.snackBar.open('Sorry, we could not obtained your position', 'Try again', {
         duration: 3000,
@@ -179,8 +189,15 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
    */
   async getMapJson(){
     if (this.firstTime) {
-      const json = await this.mapService.getCoastLineNzMapJson();
+      let json = null;
+      json = await this.mapService.getCoastLineNzMapJson();
       geoJSON(json).addTo(this.map);
+      json = await this.mapService.getMarineFarmsNzMapJson();
+      geoJSON(json, {
+        style: function (feature) {
+          return {color: '#ff475b'};
+        }
+      }).addTo(this.map);
       this.firstTime = false;
     }
   }
@@ -193,6 +210,9 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
           duration: 3000
         });
       }
+      this.snackBar.open('You are too close to the coast', 'Ok', {
+        duration: 3000
+      });
     }
     return result;
   }
@@ -224,6 +244,8 @@ export class DownloadPage implements OnInit, AfterViewInit, OnDestroy {
   async getMyTanks() {
     try {
       this.response  = await this.clientService.getTanks();
+      this.downloadForm.controls.tank.setValue(this.tankId);
+
       // this.initMap();
     } catch (e) {
       await this.util.showToast('Error getting the tanks');
